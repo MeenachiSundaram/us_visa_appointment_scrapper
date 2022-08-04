@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 # from pyvirtualdisplay import Display
+import sys
 import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -137,28 +138,30 @@ def get_date():
         return get_date()
     else:
         content = driver.find_element(By.TAG_NAME, "pre").text
-        date = json.loads(content)
-        return date
+        available_date = json.loads(content)
+        send_photo(driver.get_screenshot_as_png())
+        return available_date
 
 
-def get_time(date):
-    time_url = TIME_URL % date
+def get_time(available_date):
+    time_url = TIME_URL % available_date
     driver.get(time_url)
     content = driver.find_element(By.TAG_NAME, "pre").text
     data = json.loads(content)
-    time = data.get("available_times")[-1]
-    logging.info(f"Got time successfully! {date} {time}")
-    return time
+    available_time = data.get("available_times")[-1]
+    logging.info(f"Got time successfully! {available_date} {available_time}")
+    send_photo(driver.get_screenshot_as_png())
+    return available_time
 
 
-def reschedule(date):
+def reschedule(available_date):
     global EXIT
-    logging.info(f"Starting Reschedule ({date})")
+    logging.info(f"Starting Reschedule ({available_date})")
 
-    time = get_time(date)
+    available_time = get_time(available_date)
     driver.get(APPOINTMENT_URL)
     time.sleep(random.randint(5, 10))
-    send_photo(driver.get_screenshot_as_png())
+    # send_photo(driver.get_screenshot_as_png())
 
     data = {
         "utf8": driver.find_element(by=By.NAME, value='utf8').get_attribute('value'),
@@ -166,8 +169,8 @@ def reschedule(date):
         "confirmed_limit_message": driver.find_element(by=By.NAME, value='confirmed_limit_message').get_attribute('value'),
         "use_consulate_appointment_capacity": driver.find_element(by=By.NAME, value='use_consulate_appointment_capacity').get_attribute('value'),
         "appointments[consulate_appointment][facility_id]": FACILITY_ID,
-        "appointments[consulate_appointment][date]": date,
-        "appointments[consulate_appointment][time]": time,
+        "appointments[consulate_appointment][date]": available_date,
+        "appointments[consulate_appointment][time]": available_time,
     }
 
     headers = {
@@ -178,12 +181,12 @@ def reschedule(date):
 
     r = requests.post(APPOINTMENT_URL, headers=headers, data=data)
     if r.text.find("Successfully Scheduled") != -1:
-        msg = f"Rescheduled Successfully! {date} {time}"
+        msg = f"Rescheduled Successfully! {available_date} {available_time}"
         send_message(msg)
         send_photo(driver.get_screenshot_as_png())
         EXIT = True
     else:
-        msg = f"Reschedule Failed. {date} {time}"
+        msg = f"Reschedule Failed. {available_date} {available_time}"
         send_message(msg)
         send_photo(driver.get_screenshot_as_png())
 
@@ -208,21 +211,21 @@ last_seen = None
 def get_available_date(dates):
     global last_seen
 
-    def is_earlier(date):
+    def is_earlier(available_date):
         my_date = datetime.strptime(MY_SCHEDULE_DATE, "%Y-%m-%d")
-        new_date = datetime.strptime(date, "%Y-%m-%d")
+        new_date = datetime.strptime(available_date, "%Y-%m-%d")
         result = my_date > new_date
         logging.info(f"Is {my_date} > {new_date}:\t{result}")
         return result
 
     logging.info("Checking for an earlier date:")
     for d in dates:
-        date = d.get("date")
-        if is_earlier(date) and date != last_seen:
-            _, month, day = date.split("-")
+        available_date = d.get("date")
+        if is_earlier(available_date) and available_date != last_seen:
+            _, month, day = available_date.split("-")
             if MY_CONDITION(month, day):
-                last_seen = date
-                return date
+                last_seen = available_date
+                return available_date
 
 
 def push_notification(dates):
@@ -279,10 +282,10 @@ def run_visa_scraper(appointment_url, validation_text):
             logging.info(f"List of dates: {dates}")
             if dates:
                 print_dates(dates)
-                date = get_available_date(dates)
-                logging.info(f"New date: {date}")
-                if date:
-                    reschedule(date)
+                available_date = get_available_date(dates)
+                logging.info(f"New available_date: {available_date}")
+                if available_date:
+                    reschedule(available_date)
                     push_notification(dates)
 
                     # Closing the driver before quiting the script.
@@ -294,10 +297,10 @@ def run_visa_scraper(appointment_url, validation_text):
             logging.info(f"List of dates: {dates}")
             if dates:
                 print_dates(dates)
-                date = get_available_date(dates)
-                logging.info(f"New date: {date}")
-                if date:
-                    reschedule(date)
+                available_date = get_available_date(dates)
+                logging.info(f"New available_date: {available_date}")
+                if available_date:
+                    reschedule(available_date)
                     push_notification(dates)
 
                     # Closing the driver before quiting the script.
@@ -317,7 +320,11 @@ if __name__ == "__main__":
         Path(f'{work_dir}/cron_test.txt').touch()
         run_visa_scraper(APPOINTMENT_URL,validation_text)
     except Exception as err:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        logging.warning(exc_type, fname, exc_tb.tb_lineno)
         logging.warning(err)
         send_message("HELP! Crashed.")
+        send_message(exc_type, fname, exc_tb.tb_lineno)
         send_message(err)
         os.remove(f'{work_dir}/cron_test.txt')
