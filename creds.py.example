@@ -1,0 +1,27 @@
+# # To use the scraper, you have to replace the credentials below with real values
+
+work_dir = 'current working directory'
+
+# # ais.usvisa-info.com credentials
+username = 'email@example.com'
+password = 'your_password_in_plain_text'
+url_id = '41231513' # This is the number id in the url (e.g.: https://ais.usvisa-info.com/en-ie/niv/schedule/41231513)
+country_code = 'ie' # This is the country code in the url, ie = Ireland
+
+# validation_text = 'There are no available appointments at this time.' # comment this if your using reschedule_appointment.py script
+# validation_text = 'FORCING SCREENSHOT' # comment above and uncomment this to force screenshot
+
+# # Values needed for reschedule
+# validation_text = 'There are no available appointments at the selected location. Please try again later.' # comment this if your using check_new_appointment.py script
+# schedule_date = "2022-11-07" # yyyy-mm-dd current appointment date
+# facility_id = "13" # this is the ID for DUBLIN # check this by pressing F12 in browser
+
+# # Telegram bot token and chat 
+token = '789456321:POGO-6z31qpeRDUK-oZZyD6RhPA'
+chat_id = '-123456789'
+notification_chat_id = '-123456789' # this group chat id will get lot of notifications
+
+
+# # Pagem app
+pagem_api_key='6a829525-ddcb-486f-a308-5eeaae39928b'
+pagem_app_id='123'

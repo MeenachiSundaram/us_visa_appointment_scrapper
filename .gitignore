@@ -1,0 +1,9 @@
+creds.py
+archive
+__pycache__
+nohup.out
+debugging
+.vscode
+visa.log
+cron.log
+cron_test.txt
