@@ -139,7 +139,7 @@ def get_date():
     else:
         content = driver.find_element(By.TAG_NAME, "pre").text
         available_date = json.loads(content)
-        send_photo(driver.get_screenshot_as_png())
+        # send_photo(driver.get_screenshot_as_png())
         return available_date
 
 
@@ -161,7 +161,7 @@ def reschedule(available_date):
     available_time = get_time(available_date)
     driver.get(APPOINTMENT_URL)
     time.sleep(random.randint(5, 10))
-    # send_photo(driver.get_screenshot_as_png())
+    send_photo(driver.get_screenshot_as_png())
 
     data = {
         "utf8": driver.find_element(by=By.NAME, value='utf8').get_attribute('value'),
