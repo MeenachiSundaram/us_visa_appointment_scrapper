@@ -25,3 +25,9 @@ notification_chat_id = '-123456789' # this group chat id will get lot of notific
 # # Pagem app
 pagem_api_key='6a829525-ddcb-486f-a308-5eeaae39928b'
 pagem_app_id='123'
+
+# sendgrid
+sendgrid_api = "DG.asajshiucHHOIASNKJA.npcsahohndjJISJDsdioaasakkas"
+sendgrid_to_emails = ["mail1@example.com", "mail2@example.com"]
+sendgrid_from_email = "noreply@example.com"
+sendgrid_subject = "U.S. Visa appoinment is open"

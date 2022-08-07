@@ -19,6 +19,7 @@ import os
 
 from telegram import send_message, send_photo
 from pagem import send_page
+from send_grid import send_email
 from creds import (
     username,
     password,
@@ -174,7 +175,7 @@ def reschedule(available_date):
     }
 
     headers = {
-        "User-Agent": driver.execute_script("return navigator.userAgent;"),
+        "User-Agent": driver.execute_script("return navigator.userAgent"),
         "Referer": APPOINTMENT_URL,
         "Cookie": "_yatri_session=" + driver.get_cookie("_yatri_session")["value"],
     }
@@ -182,11 +183,13 @@ def reschedule(available_date):
     r = requests.post(APPOINTMENT_URL, headers=headers, data=data)
     if r.text.find("Successfully Scheduled") != -1:
         msg = f"Rescheduled Successfully! {available_date} {available_time}"
+        logging.info(msg)
         send_message(msg)
         send_photo(driver.get_screenshot_as_png())
         EXIT = True
     else:
         msg = f"Reschedule Failed. {available_date} {available_time}"
+        logging.info(msg)
         send_message(msg)
         send_photo(driver.get_screenshot_as_png())
 
@@ -266,6 +269,31 @@ def run_visa_scraper(appointment_url, validation_text):
             return False
 
 
+    def work_on_dates():
+        x = get_date()
+        dates = x[:5]
+        logging.info(f"List of dates: {dates}")
+        if dates:
+            print_dates(dates)
+            available_date = get_available_date(dates)
+            logging.info(f"New available_date: {available_date}")
+            if available_date:
+                reschedule(available_date)
+                push_notification(dates)
+                send_page('A change was found. paging it.')
+                send_email('A change was found. paging it.')
+
+                # Closing the driver before quiting the script.
+                driver.close()
+                exit()
+            else:
+                logging.info(f'No new available Date, Checking again in {RETRY_TIME} seconds.')
+                send_message(f'No new available Date, Checking again in {RETRY_TIME} seconds.', notification_chat_id, True)
+                # send_photo(driver.get_screenshot_as_png(), notification_chat_id, True)
+                logging.info('- '*30)
+                time.sleep(RETRY_TIME)
+
+
     login()
     time.sleep(random.randint(1, 3))
     while True:
@@ -275,37 +303,54 @@ def run_visa_scraper(appointment_url, validation_text):
             logging.info('A change was found. Notifying it.')
             send_photo(driver.get_screenshot_as_png())
             send_message('A change was found. Here is an screenshot.')
-            send_page('A change was found. paging it.')
             
-            x = get_date()
-            dates = x[:5]
-            logging.info(f"List of dates: {dates}")
-            if dates:
-                print_dates(dates)
-                available_date = get_available_date(dates)
-                logging.info(f"New available_date: {available_date}")
-                if available_date:
-                    reschedule(available_date)
-                    push_notification(dates)
+            work_on_dates()
+            # x = get_date()
+            # dates = x[:5]
+            # logging.info(f"List of dates: {dates}")
+            # if dates:
+            #     print_dates(dates)
+            #     available_date = get_available_date(dates)
+            #     logging.info(f"New available_date: {available_date}")
+            #     if available_date:
+            #         reschedule(available_date)
+            #         push_notification(dates)
+            #         send_page('A change was found. paging it.')
+            #         send_email('A change was found. paging it.')
 
-                    # Closing the driver before quiting the script.
-                    driver.close()
-                    exit()
+            #         # Closing the driver before quiting the script.
+            #         driver.close()
+            #         exit()
+            #     else:
+            #         logging.info(f'No new available Date, Checking again in {RETRY_TIME} seconds.')
+            #         send_message(f'No new available Date, Checking again in {RETRY_TIME} seconds.', notification_chat_id, True)
+            #         # send_photo(driver.get_screenshot_as_png(), notification_chat_id, True)
+            #         logging.info('- '*30)
+            #         time.sleep(RETRY_TIME)
         else:
-            x = get_date()
-            dates = x[:5]
-            logging.info(f"List of dates: {dates}")
-            if dates:
-                print_dates(dates)
-                available_date = get_available_date(dates)
-                logging.info(f"New available_date: {available_date}")
-                if available_date:
-                    reschedule(available_date)
-                    push_notification(dates)
+            work_on_dates()
+            # x = get_date()
+            # dates = x[:5]
+            # logging.info(f"List of dates: {dates}")
+            # if dates:
+            #     print_dates(dates)
+            #     available_date = get_available_date(dates)
+            #     logging.info(f"New available_date: {available_date}")
+            #     if available_date:
+            #         reschedule(available_date)
+            #         push_notification(dates)
+            #         send_page('A change was found. paging it.')
+            #         send_email('A change was found. paging it.')
 
-                    # Closing the driver before quiting the script.
-                    driver.close()
-                    exit()
+            #         # Closing the driver before quiting the script.
+            #         driver.close()
+            #         exit()
+            #     else:
+            #         logging.info(f'No new available Date, Checking again in {RETRY_TIME} seconds.')
+            #         send_message(f'No new available Date, Checking again in {RETRY_TIME} seconds.', notification_chat_id, True)
+            #         # send_photo(driver.get_screenshot_as_png(), notification_chat_id, True)
+            #         logging.info('- '*30)
+            #         time.sleep(RETRY_TIME)
                 
             logging.info(f'No change was found. Checking again in {RETRY_TIME} seconds.')
             send_message(f'No change was found. Checking again in {RETRY_TIME} seconds.', notification_chat_id, True)
