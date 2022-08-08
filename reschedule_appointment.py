@@ -17,10 +17,10 @@ from datetime import datetime
 from pathlib import Path
 import os
 
-from telegram import send_message, send_photo
-from pagem import send_page
-from send_grid import send_email
-from creds import (
+from module.telegram import send_message, send_photo
+from module.pagem import send_page
+from module.send_grid import send_email
+from module.creds import (
     username,
     password,
     url_id,
@@ -29,8 +29,10 @@ from creds import (
     country_code,
     validation_text,
     notification_chat_id,
-    work_dir
+    work_dir,
+    pd_msg
 )
+from module.pager_duty import trigger_incident
 
 USERNAME = username
 PASSWORD = password
@@ -280,8 +282,9 @@ def run_visa_scraper(appointment_url, validation_text):
             if available_date:
                 reschedule(available_date)
                 push_notification(dates)
-                send_page('A change was found. paging it.')
-                send_email('A change was found. paging it.')
+                send_page(pd_msg)
+                send_email(pd_msg)
+                trigger_incident(pd_msg, pd_msg)
 
                 # Closing the driver before quiting the script.
                 driver.close()
@@ -292,6 +295,12 @@ def run_visa_scraper(appointment_url, validation_text):
                 # send_photo(driver.get_screenshot_as_png(), notification_chat_id, True)
                 logging.info('- '*30)
                 time.sleep(RETRY_TIME)
+        else:
+            logging.info(f'No new Dates, Checking again in {RETRY_TIME} seconds.')
+            send_message(f'No new Dates, Checking again in {RETRY_TIME} seconds.', notification_chat_id, True)
+            # send_photo(driver.get_screenshot_as_png(), notification_chat_id, True)
+            logging.info('- '*30)
+            time.sleep(RETRY_TIME)
 
 
     login()
@@ -300,64 +309,13 @@ def run_visa_scraper(appointment_url, validation_text):
         current_time = time.strftime('%a, %d %b %Y %H:%M:%S', time.localtime())
         logging.info(f'Starting a new check at {current_time}.')
         if has_website_changed():
-            logging.info('A change was found. Notifying it.')
+            logging.info('A change in web UI was found.')
+            send_message('A change in web UI was found.')
             send_photo(driver.get_screenshot_as_png())
-            send_message('A change was found. Here is an screenshot.')
             
             work_on_dates()
-            # x = get_date()
-            # dates = x[:5]
-            # logging.info(f"List of dates: {dates}")
-            # if dates:
-            #     print_dates(dates)
-            #     available_date = get_available_date(dates)
-            #     logging.info(f"New available_date: {available_date}")
-            #     if available_date:
-            #         reschedule(available_date)
-            #         push_notification(dates)
-            #         send_page('A change was found. paging it.')
-            #         send_email('A change was found. paging it.')
-
-            #         # Closing the driver before quiting the script.
-            #         driver.close()
-            #         exit()
-            #     else:
-            #         logging.info(f'No new available Date, Checking again in {RETRY_TIME} seconds.')
-            #         send_message(f'No new available Date, Checking again in {RETRY_TIME} seconds.', notification_chat_id, True)
-            #         # send_photo(driver.get_screenshot_as_png(), notification_chat_id, True)
-            #         logging.info('- '*30)
-            #         time.sleep(RETRY_TIME)
         else:
             work_on_dates()
-            # x = get_date()
-            # dates = x[:5]
-            # logging.info(f"List of dates: {dates}")
-            # if dates:
-            #     print_dates(dates)
-            #     available_date = get_available_date(dates)
-            #     logging.info(f"New available_date: {available_date}")
-            #     if available_date:
-            #         reschedule(available_date)
-            #         push_notification(dates)
-            #         send_page('A change was found. paging it.')
-            #         send_email('A change was found. paging it.')
-
-            #         # Closing the driver before quiting the script.
-            #         driver.close()
-            #         exit()
-            #     else:
-            #         logging.info(f'No new available Date, Checking again in {RETRY_TIME} seconds.')
-            #         send_message(f'No new available Date, Checking again in {RETRY_TIME} seconds.', notification_chat_id, True)
-            #         # send_photo(driver.get_screenshot_as_png(), notification_chat_id, True)
-            #         logging.info('- '*30)
-            #         time.sleep(RETRY_TIME)
-                
-            logging.info(f'No change was found. Checking again in {RETRY_TIME} seconds.')
-            send_message(f'No change was found. Checking again in {RETRY_TIME} seconds.', notification_chat_id, True)
-            # send_photo(driver.get_screenshot_as_png(), notification_chat_id, True)
-            logging.info('- '*30)
-            time.sleep(RETRY_TIME)
-
 
 
 if __name__ == "__main__":

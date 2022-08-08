@@ -4,9 +4,9 @@ from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 import time
 import sys
-from telegram import send_message, send_photo
-from pagem import send_page
-from creds import (
+from module.telegram import send_message, send_photo
+from module.pagem import send_page
+from module.creds import (
     username,
     password,
     url_id,

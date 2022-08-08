@@ -4,7 +4,7 @@ import os
 from re import sub
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-from creds import (
+from .creds import (
     sendgrid_api,
     sendgrid_to_emails,
     sendgrid_from_email,

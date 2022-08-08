@@ -1,5 +1,5 @@
 import requests
-from creds import pagem_api_key, pagem_app_id
+from .creds import pagem_api_key, pagem_app_id
 
 
 def send_page(page_text):

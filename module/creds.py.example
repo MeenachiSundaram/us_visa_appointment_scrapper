@@ -31,3 +31,9 @@ sendgrid_api = "DG.asajshiucHHOIASNKJA.npcsahohndjJISJDsdioaasakkas"
 sendgrid_to_emails = ["mail1@example.com", "mail2@example.com"]
 sendgrid_from_email = "noreply@example.com"
 sendgrid_subject = "U.S. Visa appoinment is open"
+
+# PagerDuty
+pd_api_key = 'u+T6-asajshiucHHOIASNKJA'
+pd_service_id = 'ABC123ZY'
+pd_from = 'mail@example.com'
+pd_msg = 'Xyz US Visa'

@@ -18,10 +18,10 @@ mkdir -p ${WORK_DIR}/archive
 wget -q -O test.jpg https://unsplash.it/1920/1080/?random
 mv test.jpg ${WORK_DIR}/archive
 
-if [[ ! -f creds.py ]]
+if [[ ! -f module/creds.py ]]
 then
     echo_fn "'creds.py' does not exist creating now, replace the values in this file"
-    cp creds.py.example creds.py
+    cp module/creds.py.example module/creds.py
 fi
 
 echo_fn "Installing Chrome driver"

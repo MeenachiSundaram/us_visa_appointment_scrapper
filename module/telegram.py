@@ -1,5 +1,5 @@
 import requests
-from creds import token, chat_id
+from .creds import token, chat_id
 
 
 def send_message(text, chat_id=chat_id, notification=False):
