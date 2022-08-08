@@ -166,7 +166,7 @@ def reschedule(available_date):
     time.sleep(random.randint(5, 10))
     send_photo(driver.get_screenshot_as_png())
 
-    data = {
+    payload = {
         "utf8": driver.find_element(by=By.NAME, value='utf8').get_attribute('value'),
         "authenticity_token": driver.find_element(by=By.NAME, value='authenticity_token').get_attribute('value'),
         "confirmed_limit_message": driver.find_element(by=By.NAME, value='confirmed_limit_message').get_attribute('value'),
@@ -182,7 +182,8 @@ def reschedule(available_date):
         "Cookie": "_yatri_session=" + driver.get_cookie("_yatri_session")["value"],
     }
 
-    r = requests.post(APPOINTMENT_URL, headers=headers, data=data)
+    r = requests.request("POST", APPOINTMENT_URL, headers=headers, data=payload)
+    logging.info(r.text)
     if r.text.find("Successfully Scheduled") != -1:
         msg = f"Rescheduled Successfully! {available_date} {available_time}"
         logging.info(msg)
